@@ -9,7 +9,7 @@ type Load = {
   destination: string
   distance: number
   rate: number
-  rate_per_mile: number
+  rate_per_mile: string | number  // ✅ Može biti string iz DB!
   equipment: string
   broker: string
   pickup_date: string
@@ -45,6 +45,13 @@ export default function LoadBoardPage() {
     load.destination.toLowerCase().includes(filter.toLowerCase()) ||
     load.broker.toLowerCase().includes(filter.toLowerCase())
   )
+
+  // ✅ Helper function to safely convert rate_per_mile
+  const getRatePerMile = (load: Load) => {
+    return typeof load.rate_per_mile === 'string' 
+      ? parseFloat(load.rate_per_mile) 
+      : load.rate_per_mile
+  }
 
   if (loading) {
     return (
@@ -87,19 +94,19 @@ export default function LoadBoardPage() {
           <div className="bg-white/10 backdrop-blur-sm rounded-xl p-4 border border-white/20">
             <div className="text-blue-200 text-sm">Avg Rate/Mile</div>
             <div className="text-white text-3xl font-bold">
-              ${loads.length > 0 ? (loads.reduce((sum, l) => sum + l.rate_per_mile, 0) / loads.length).toFixed(2) : '0.00'}
+              ${loads.length > 0 ? (loads.reduce((sum, l) => sum + getRatePerMile(l), 0) / loads.length).toFixed(2) : '0.00'}
             </div>
           </div>
           <div className="bg-white/10 backdrop-blur-sm rounded-xl p-4 border border-white/20">
             <div className="text-blue-200 text-sm">Total Value</div>
             <div className="text-white text-3xl font-bold">
-              ${loads.reduce((sum, l) => sum + l.rate, 0).toLocaleString()}
+              ${loads.reduce((sum, l) => sum + Number(l.rate), 0).toLocaleString()}
             </div>
           </div>
           <div className="bg-white/10 backdrop-blur-sm rounded-xl p-4 border border-white/20">
             <div className="text-blue-200 text-sm">Total Miles</div>
             <div className="text-white text-3xl font-bold">
-              {loads.reduce((sum, l) => sum + l.distance, 0).toLocaleString()}
+              {loads.reduce((sum, l) => sum + Number(l.distance), 0).toLocaleString()}
             </div>
           </div>
         </div>
@@ -130,12 +137,12 @@ export default function LoadBoardPage() {
                   </td>
                   <td className="px-6 py-4 text-right">
                     <span className="text-green-400 font-bold text-lg">
-                      ${load.rate.toLocaleString()}
+                      ${Number(load.rate).toLocaleString()}
                     </span>
                   </td>
                   <td className="px-6 py-4 text-right">
                     <span className="text-blue-200 font-semibold">
-                      ${load.rate_per_mile.toFixed(2)}
+                      ${getRatePerMile(load).toFixed(2)}
                     </span>
                   </td>
                   <td className="px-6 py-4 text-right">
